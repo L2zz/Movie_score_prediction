@@ -7,15 +7,16 @@ from PIL import Image
 def get_data(file_name, is_train):
 
     file_path = '/assets/'
-    preproc_data = pd.read_csv(file_path + file_name, encoding='utf-8')
-
+    df = pd.read_csv(file_path + file_name, encoding='utf-8'i,\
+                     names=['A','B','C','D','E','F']) 
     # Input: C, D, H, J, K, L, N, O, P, Q, R
     # Output: W, X
-    # Preprocessed data list used in prediction
+    df = df.drop(df.columns[[0,1,4,5,6,]], axis=1)
+    
     # Feature Scaling
 
     # One-hot Encoding
 
-    csv_file.close()
+    return df
 
-    return preproc_data
+get_data('movie_train.csv', True)
