@@ -5,7 +5,7 @@ import pandas as pd
 from PIL import Image
 from sklearn.preprocessing import minmax_scale
 
-# Input column: C, H, J, K, N, O, P, Q, R
+# Input column: C, H, K, N, O, P, Q, R
 # Output column: W, X
 def get_data(is_train):
     # Set file path and name
@@ -42,10 +42,10 @@ def get_data(is_train):
     df['H'] = label_h
     df['N'] = label_n
     df['R'] = label_r
-    
-    X = df[['C','H','J','K','N','O','P','Q','R']].values
+
+    X = df[['C','H','K','N','O','P','Q','R']].values
     Y = df[['W','X']].values
-    print(X.shape)
+
     return X, Y
 
 def get_poster(is_train):
@@ -55,12 +55,11 @@ def get_poster(is_train):
         poster_file_name = 'movie_train_image.npy'
     else:
         poster_file_name = 'movie_test_image.npy'
-    
+
     # Get posters
     posters = np.load(file_path + poster_file_name)
-    posters = posters.reshape((posters.shape[0], 300*200*3))
 
     if not is_train:
         posters = np.delete(posters, 999)
-       
+
     return posters
