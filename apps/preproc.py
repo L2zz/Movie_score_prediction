@@ -48,16 +48,19 @@ def get_data(is_train):
     
     return X, Y
 
-def get_poster(index, batch_size, is_train):
+def get_poster(is_train):
     # Set file path and name
     file_path = '/assets/'
-    if (is_train):
+    if(is_train):
         poster_file_name = 'movie_train_image.npy'
     else:
         poster_file_name = 'movie_test_image.npy'
-
-    # Get batch size posters
-    posters = np.load(file_path + poster_file_name)
-    batch_posters = posters[index: index+batch_size]
     
-    return batch_posters
+    # Get posters
+    posters = np.load(file_path + poster_file_name)
+    posters = posters.reshape((posters.shape[0], 300*200*3))
+
+    if (!is_train):
+        posters = np.delete(posters, 999)
+       
+    return posters
