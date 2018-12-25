@@ -104,9 +104,40 @@ if __name__ == '__main__':
 
     W4 = tf.Variable(tf.random_normal([32, 2], stddev=0.01))
     B4 = tf.Variable(tf.random_normal(shape=[2], stddev=0.01))
-    L4 = tf.matmul(L3, W4) + B4
-    L4 = tf.contrib.layers.batch_norm(L4, is_training=is_training, center=True, scale=True, updates_collections=None)
-    model = tf.nn.sigmoid(L4)
+    model = tf.matmul(L3, W4) + B4
 
-    cost = -tf.reduce_mean(Y*tf.log(model) + (1-Y)*tf.log(1-model))
+    cost = tf.reduce_mean(tf.square(model - Y))
     optimizer = tf.train.AdamOptimizer(0.001).minimize(cost)
+
+    batch_size = 100
+    total_train_batch = (int)(total_train_data / batch_size)
+    total_test_batch = (int)(total_test_data / batch_size)
+
+    init = tf.global_variables_initializer()
+    sess.run(init)
+
+    print('\n<< Training Start >>\n')
+    for epoch in range(50):
+        total_cost = 0
+        for step in range(total_train_batch):
+            start_idx = step * batch_size
+            batch_x_data = data_train[start_idx:start_idx+batch_size]
+            batch_x_poster = poster_train[start_idx:start_idx+batch_size]
+            batch_y = result_train[start_idx:start_idx+batch_size]
+
+            _, cost_val = sess.run([optimizer, cost], \
+                                    feed_dict={X_data: batch_x_data, X_poster: batch_x_poster \
+                                               Y: batch_y, keep_prob: 0.7, is_training: True})
+            total_cost += cost_val
+        print('Epoch:', '%04d\t'%(epoch + 1), \
+	          'Avg.cost = ', '{:.3f}'.format(total_cost/ total_train_batch))
+    print('\n<< Training Done >>\n')
+
+    for step in range(total_test_batch):
+        start_idx = step * batch_size
+        batch_x_data = data_test[start_idx:start_idx+batch_size]
+        batch_x_poster = data_test[start_idx:start_idx+batch_size]
+
+        model_val = sess.run([model], feed_dict={X_data: batch_x_data, X_poster: batch_x_poster \
+                                                 keep_prob: 1.0, is_training: False})
+        print(model_val)
