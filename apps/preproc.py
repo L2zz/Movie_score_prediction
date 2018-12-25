@@ -23,7 +23,7 @@ def get_data(is_train):
     df = df.drop(['A','B','D','E','F','G','I','L','M','S','T','U','V'], 1)
 
     # Drop Error data
-    if (is_train):
+    if is_train:
         df = df.drop(df.index[4180])
 
     # Get year from release date
@@ -45,7 +45,7 @@ def get_data(is_train):
     
     X = df[['C','H','J','K','N','O','P','Q','R']].values
     Y = df[['W','X']].values
-    
+    print(X.shape)
     return X, Y
 
 def get_poster(is_train):
@@ -60,7 +60,7 @@ def get_poster(is_train):
     posters = np.load(file_path + poster_file_name)
     posters = posters.reshape((posters.shape[0], 300*200*3))
 
-    if (!is_train):
+    if not is_train:
         posters = np.delete(posters, 999)
        
     return posters
