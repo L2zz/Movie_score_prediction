@@ -1,5 +1,6 @@
 import init_set
 import preproc
+import csv
 import numpy as np
 import tensorflow as tf
 
@@ -16,12 +17,13 @@ if __name__ == '__main__':
 
     X_data = tf.placeholder(tf.float32, shape=[None, 8])
     X_poster = tf.placeholder(tf.float32, shape=[None, 300, 200, 3])
-    Y = tf.placeholder(tf.float32, shpae=[None, 2])
+    Y = tf.placeholder(tf.float32, shape=[None, 2])
     is_training = tf.placeholder(tf.bool)
+    keep_prob = tf.placeholder(tf.float32)
 
     # CNN for poster
     CW1 = tf.Variable(tf.random_normal([3, 3, 3, 64], stddev=0.01))
-    CL1 = tf.nn.conv2d(X_poster, filter=W1, strides=[1,1,1,1], padding='SAME')
+    CL1 = tf.nn.conv2d(X_poster, filter=CW1, strides=[1,1,1,1], padding='SAME')
     CL1 = tf.contrib.layers.batch_norm(CL1, is_training=is_training, center=True, scale=True, updates_collections=None)
     CL1 = tf.nn.relu(CL1)
     CL1 = tf.nn.dropout(CL1, keep_prob)
@@ -44,7 +46,7 @@ if __name__ == '__main__':
     CL4 = tf.nn.max_pool(CL4, ksize=[1,2,2,1], strides=[1,2,2,1], padding='SAME')
     CL4 = tf.nn.dropout(CL4, keep_prob)
 
-    CW5 = tf.Variable(tf.random_normal([3, 3, 64, 128], stddev=0.01))
+    CW5 = tf.Variable(tf.random_normal([3, 3, 128, 128], stddev=0.01))
     CL5 = tf.nn.conv2d(CL4, filter=CW5, strides=[1,1,1,1], padding='SAME')
     CL5 = tf.contrib.layers.batch_norm(CL5, is_training=is_training, center=True, scale=True, updates_collections=None)
     CL5 = tf.nn.relu(CL5)
@@ -80,7 +82,7 @@ if __name__ == '__main__':
     poster = tf.nn.relu(tf.matmul(CL9, CW10) + CB10)
 
     # Combine poster and X_data
-    X = np.concatenate((poster, X_data), axis=1)
+    X = tf.concat([poster, X_data], axis=1)
     W1 = tf.Variable(tf.random_normal([9, 128], stddev=0.01))
     B1 = tf.Variable(tf.random_normal(shape=[128], stddev=0.01))
     L1 = tf.matmul(X, W1) + B1
@@ -106,10 +108,10 @@ if __name__ == '__main__':
     B4 = tf.Variable(tf.random_normal(shape=[2], stddev=0.01))
     model = tf.matmul(L3, W4) + B4
 
-    cost = tf.reduce_mean(tf.square(model - Y))
+    cost = tf.reduce_mean(tf.square(model[:,0] - Y[:,0]))
     optimizer = tf.train.AdamOptimizer(0.001).minimize(cost)
 
-    batch_size = 100
+    batch_size = 8
     total_train_batch = (int)(total_train_data / batch_size)
     total_test_batch = (int)(total_test_data / batch_size)
 
@@ -126,18 +128,21 @@ if __name__ == '__main__':
             batch_y = result_train[start_idx:start_idx+batch_size]
 
             _, cost_val = sess.run([optimizer, cost], \
-                                    feed_dict={X_data: batch_x_data, X_poster: batch_x_poster \
+                                    feed_dict={X_data: batch_x_data, X_poster: batch_x_poster, \
                                                Y: batch_y, keep_prob: 0.7, is_training: True})
             total_cost += cost_val
         print('Epoch:', '%04d\t'%(epoch + 1), \
 	          'Avg.cost = ', '{:.3f}'.format(total_cost/ total_train_batch))
     print('\n<< Training Done >>\n')
-
+    
+    f = open('../data/score.csv', 'w', encoding='utf-8', newline='')
+    wr = csv.writer(f) 
     for step in range(total_test_batch):
         start_idx = step * batch_size
         batch_x_data = data_test[start_idx:start_idx+batch_size]
         batch_x_poster = data_test[start_idx:start_idx+batch_size]
 
-        model_val = sess.run([model], feed_dict={X_data: batch_x_data, X_poster: batch_x_poster \
+        model_val = sess.run([model], feed_dict={X_data: batch_x_data, X_poster: batch_x_poster, \
                                                  keep_prob: 1.0, is_training: False})
-        print(model_val)
+        wr.writerow([model_val[:,0]])
+    f.close()
