@@ -34,11 +34,18 @@ def get_data(is_train):
     # C: budget |  K: popularity | O: release_date_year | P: revenue | Q: runtime
     df[['C','K','O','P','Q']] = df[['C','K','O','P','Q']].apply(minmax_scale)
 
-    # One-hot Encoding
+    # Encoding
     # H: original_language | N: production_countries | R: spoken_language
-    df[['H','N','R']] = pd.get_dummies(df[['H','N','R']])
-
-    print(df[['H','N','R']])
+    label_h, _ = pd.factorize(df['H'])
+    label_n, _ = pd.factorize(df['N'])
+    label_r, _ = pd.factorize(df['R'])
+    df['H'] = label_h
+    df['N'] = label_n
+    df['R'] = label_r
+    
+    X = df[['C','H','J','K','N','O','P','Q','R']].values
+    Y = df[['W','X']].values
+    
     return X, Y
 
 def get_poster(index, batch_size, is_train):
@@ -52,7 +59,5 @@ def get_poster(index, batch_size, is_train):
     # Get batch size posters
     posters = np.load(file_path + poster_file_name)
     batch_posters = posters[index: index+batch_size]
-    print(batch_posters)
+    
     return batch_posters
-
-get_data(index, 100, True)
