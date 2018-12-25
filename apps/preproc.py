@@ -3,21 +3,17 @@ import sys
 import numpy as np
 import pandas as pd
 from PIL import Image
-from datetime import datetime
 from sklearn.preprocessing import minmax_scale
 
 # Input column: C, H, J, K, N, O, P, Q, R
 # Output column: W, X
 def get_data(is_train):
-    
     # Set file path and name
     file_path = '/assets/'
     if (is_train):
         file_name = 'movie_train.csv'
-        poster_file_name = 'movie_train_image.npy'
     else:
         file_name = 'movie_test.csv'
-        poster_file_name = 'movie_test_image.npy'
 
     # Select data from file
     df = pd.read_csv(file_path + file_name, encoding='utf-8', \
@@ -29,8 +25,6 @@ def get_data(is_train):
     # Drop Error data
     if (is_train):
         df = df.drop(df.index[4180])
-    else:
-        df = df.drop(df.index[999])
 
     # Get year from release date
     df['O'] = pd.to_datetime(df['O'])
@@ -42,10 +36,23 @@ def get_data(is_train):
 
     # One-hot Encoding
     # H: original_language | N: production_countries | R: spoken_language
-    
-    print(df)
+    df[['H','N','R']] = pd.get_dummies(df[['H','N','R']])
+
+    print(df[['H','N','R']])
     return X, Y
 
-def get_poster(batch_size, is_train):
-    
+def get_poster(index, batch_size, is_train):
+    # Set file path and name
+    file_path = '/assets/'
+    if (is_train):
+        poster_file_name = 'movie_train_image.npy'
+    else:
+        poster_file_name = 'movie_test_image.npy'
+
+    # Get batch size posters
+    posters = np.load(file_path + poster_file_name)
+    batch_posters = posters[index: index+batch_size]
+    print(batch_posters)
+    return batch_posters
+
 get_data(index, 100, True)
