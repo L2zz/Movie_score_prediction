@@ -11,7 +11,7 @@ if __name__ == '__main__':
     data_train, result_train = preproc.get_data(True)
     poster_train = preproc.get_poster(True)
     data_test, _ = preproc.get_data(False)
-    poster_test = preproc.get_poster(True)
+    poster_test = preproc.get_poster(False)
     total_train_data = data_train.shape[0]
     total_test_data = data_test.shape[0]
 
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     cost = tf.reduce_mean(tf.square(model[:,0] - Y[:,0]))
     optimizer = tf.train.AdamOptimizer(0.001).minimize(cost)
 
-    batch_size = 8
+    batch_size = 3
     total_train_batch = (int)(total_train_data / batch_size)
     total_test_batch = (int)(total_test_data / batch_size)
 
