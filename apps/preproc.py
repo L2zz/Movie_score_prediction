@@ -60,6 +60,6 @@ def get_poster(is_train):
     posters = np.load(file_path + poster_file_name)
 
     if not is_train:
-        posters = np.delete(posters, 999)
+        posters = np.delete(posters, (999), axis=0) 
 
     return posters
