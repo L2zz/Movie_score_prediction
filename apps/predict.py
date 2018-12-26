@@ -119,7 +119,7 @@ if __name__ == '__main__':
     sess.run(init)
 
     print('\n<< Training Start >>\n')
-    for epoch in range(50):
+    for epoch in range(25):
         total_cost = 0
         for step in range(total_train_batch):
             start_idx = step * batch_size
@@ -140,9 +140,10 @@ if __name__ == '__main__':
     for step in range(total_test_batch):
         start_idx = step * batch_size
         batch_x_data = data_test[start_idx:start_idx+batch_size]
-        batch_x_poster = data_test[start_idx:start_idx+batch_size]
+        batch_x_poster = poster_test[start_idx:start_idx+batch_size]
 
         model_val = sess.run([model], feed_dict={X_data: batch_x_data, X_poster: batch_x_poster, \
                                                  keep_prob: 1.0, is_training: False})
-        wr.writerow([model_val[:,0]])
+        for i in range(batch_size):
+            wr.writerow([round(model_val[0][i][0],1)])
     f.close()
